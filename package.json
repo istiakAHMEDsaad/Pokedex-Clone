@@ -1,0 +1,16 @@
+{
+  "name": "pokedex-clone",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "dev": "npx tailwindcss -i ./input.css -o ./dist/output.css --watch"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "daisyui": "^4.12.13",
+    "tailwindcss": "^3.4.13"
+  }
+}
