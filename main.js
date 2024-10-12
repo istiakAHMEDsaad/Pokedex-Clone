@@ -1,63 +1,53 @@
-const loadingAnimation = document.querySelector('.loading-spinner');
-const showLoading = () => {
-  loadingAnimation.classList.add('show');
-};
-const stopLoading = () => {
-  loadingAnimation.classList.remove('show');
-};
-
 const MAX_POKEMON = 151;
-const listWrapper = document.getElementsByClassName('pokemon-list')[0];
-const searchInput = document.getElementById('search-input');
-const numberFilter = document.getElementById('number-filter');
-const nameFilter = document.getElementById('name-filter');
-const notFoundMessage = document.getElementById('not-found-message');
+const listWrapper = document.getElementsByClassName("pokemon-list")[0];
+const searchInput = document.getElementById("search-input");
+const numberFilter = document.getElementById("number-filter");
+const nameFilter = document.getElementById("name-filter");
+const notFoundMessage = document.getElementById("not-found-message");
 
-let allPokemon = [];
+
+let allPokemons = [];
 
 fetch(`https://pokeapi.co/api/v2/pokemon?limit=${MAX_POKEMON}`)
-  .then((response) => response.json())
-  .then((data) => {
-    allPokemon = data.results;
-    showLoading();
-    setTimeout(() => {
-      stopLoading();
-      displayPokemons(allPokemon);
-    }, 100);
-  })
-  .catch((error) => console.error(error));
+    .then((response) => response.json())
+    .then((data) => {
+      allPokemons = data.results;
+      displayPokemons(allPokemons);
+    })
+    .catch((error) => console.error(error));
 
 async function fetchPokemonDataBeforeRedirect(id) {
-  showLoading();
-
   try {
     const [pokemon, pokemonSpecies] = await Promise.all([
-      fetch(`https://pokeapi.co/api/v2/pokemon/${id}`)
-        .then((response) => response.json())
-        .fetch(`https://pokeapi.co/api/v2/pokemon-species/${id}`)
-        .then((response) => response.json),
+      fetch(`https://pokeapi.co/api/v2/pokemon/${id}`).then((res) =>
+          res.json()
+      ),
+      fetch(`https://pokeapi.co/api/v2/pokemon-species/${id}`).then((res) =>
+          res.json()
+      ),
     ]);
     return true;
   } catch (error) {
-    console.error('Faild to fetch pokemon data before redirect');
+    console.error('Failed to fetch Pokemon data before redirect');
   }
 }
 
-const displayPokemons = (pokemon) => {
+function displayPokemons(pokemon) {
   listWrapper.innerHTML = '';
+
   pokemon.forEach((pokemon) => {
     const pokemonID = pokemon.url.split('/')[6];
     const listItem = document.createElement('div');
-    // listItem.classList = '';
+    listItem.className = '';
     listItem.innerHTML = `
-        <div>
-            <p>#${pokemonID}</p>
+        <div class="">
+            <p class="caption-fonts">#${pokemonID}</p>
         </div>
-        <div>
+        <div class="">
             <img src="https://raw.githubusercontent.com/pokeapi/sprites/master/sprites/pokemon/other/dream-world/${pokemonID}.svg" alt="${pokemon.name}" />
         </div>
         <div class="">
-            <p class="">#${pokemon.name}</p>
+            <p class="body3-fonts">#${pokemon.name}</p>
         </div>
     `;
 
@@ -70,4 +60,32 @@ const displayPokemons = (pokemon) => {
 
     listWrapper.appendChild(listItem);
   });
-};
+}
+
+searchInput.addEventListener('keyup', handleSearch);
+
+function handleSearch() {
+  const searchTerm = searchInput.value.toLowerCase();
+  let filteredPokemons;
+
+  if (numberFilter.checked) {
+    filteredPokemons = allPokemons.filter((pokemon) => {
+      const pokemonID = pokemon.url.split('/')[6];
+      return pokemonID.startsWith(searchTerm);
+    });
+  } else if (nameFilter.checked) {
+    filteredPokemons = allPokemons.filter((pokemon) =>
+        pokemon.name.toLowerCase().startsWith(searchTerm)
+    );
+  } else {
+    filteredPokemons = allPokemons;
+  }
+
+  displayPokemons(filteredPokemons);
+
+  if (filteredPokemons.length === 0) {
+    notFoundMessage.style.display = 'block';
+  } else {
+    notFoundMessage.style.display = 'none';
+  }
+}
